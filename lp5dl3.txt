@@ -1,0 +1,178 @@
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+
+(x_train, y_train), (x_test, y_test) = keras.datasets.fashion_mnist.load_data()
+
+
+
+class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+                  'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+
+
+for i in range(10):
+       print(f"Label: {y_train[i]}, Category: {class_names[y_train[i]]}")
+
+
+
+target_label = 3  # Label for 'Dress'
+
+
+dress_indexes = [i for i, label in enumerate(y_train) if label == target_label]
+
+
+print(dress_indexes)
+
+
+
+
+for index in dress_indexes:
+       label = y_train[index]  # Get the label at the current index
+       category = class_names[label]  # Get the category name using the label
+       print(f"Index: {index}, Label: {label}, Category: {category}")
+
+
+
+
+category_indexes = {}
+for i, label in enumerate(y_train):
+    category = class_names[label]
+    if category not in category_indexes:
+        category_indexes[category] = []
+    category_indexes[category].append(i)
+
+
+
+for category, indexes in category_indexes.items():
+    print(f"Category: {category}, Indexes: {indexes}")
+
+
+
+plt.imshow(x_train[1])
+
+
+
+
+
+plt.imshow(x_train[0])
+
+
+
+
+# Normalize pixel values to 0-1
+x_train = x_train.astype('float32') / 255.0
+x_test = x_test.astype('float32') / 255.0
+
+
+
+
+
+# Reshape to fit CNN input
+x_train = x_train.reshape(-1, 28, 28, 1)
+x_test = x_test.reshape(-1, 28, 28, 1)
+
+
+
+
+
+
+
+# Print dataset shapes
+print("x_train shape:", x_train.shape)
+print("x_test shape:", x_test.shape)
+print("y_train shape:", y_train.shape)
+print("y_test shape:", y_test.shape)
+
+
+
+
+# Define the CNN model
+model = keras.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Dropout(0.25),
+    
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Dropout(0.25),
+    
+    layers.Conv2D(128, (3, 3), activation='relu'),
+    layers.Flatten(),
+    layers.Dropout(0.25),
+    
+    layers.Dense(128, activation='relu'),
+    layers.Dense(10, activation='softmax')
+])
+
+
+
+
+
+
+model.summary()
+
+
+
+
+
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+
+
+
+
+
+
+# Train the model
+history = model.fit(x_train, y_train, epochs=10, validation_data=(x_test, y_test))
+
+
+
+
+
+
+# Evaluate the model
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print('Test accuracy:', test_acc)
+
+
+
+
+model.summary() 
+
+
+
+
+
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Val Accuracy')
+plt.title('Model Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Val Loss')
+plt.title('Model Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+
+
+
